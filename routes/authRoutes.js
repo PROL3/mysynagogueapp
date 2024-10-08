@@ -9,8 +9,16 @@ const router = express.Router();
 
 // רישום משתמש חדש
 router.post("/register", async (req, res) => {
-  const { username, email, phoneNumber, password } = req.body;
-  console.log("Received data:", req.body); // הוספת שורה זו לבדוק את הנתונים המתקבלים
+  const { 
+    username, 
+    email, 
+    phoneNumber, 
+    password, 
+    donations = [], // Default to empty array if not provided
+    totalDonated = 0.0, // Default to 0 if not provided
+    totalOwed = 0.0, // Default to 0 if not provided
+    monthlyDonations = {} // Default to empty object if not provided
+  } = req.body;  console.log("Received data:", req.body); // הוספת שורה זו לבדוק את הנתונים המתקבלים
 
   try {
     if (!username || !email || !password) {
@@ -30,7 +38,12 @@ router.post("/register", async (req, res) => {
       username,
       email,
       phoneNumber: phoneNumber || "",
-      password: hashedPassword
+      password: hashedPassword,
+      role,
+      donations,
+      totalDonated,
+      totalOwed,
+      monthlyDonations
     });
 
     await newUser.save();
@@ -70,6 +83,8 @@ router.post("/login", async (req, res) => {
       // מונע גישה לעוגיה דרך JavaScript
       secure: true, // חובה אם אתה משתמש ב-HTTPS
       sameSite: 'None', // נדרש כדי לשלוח קוקיז בבקשות Cross-Site
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ימים במילישניות
+
     });
     // שלח הודעת הצלחה
     res.status(200).json({ username: user.username, role: user.role, message: 'Logged in successfully' });
