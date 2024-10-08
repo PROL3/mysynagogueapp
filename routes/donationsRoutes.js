@@ -8,7 +8,7 @@ const authenticateJWT = (req, res, next) => {
   try {
     const token = req.cookies.token;
     console.log("Received token:", token); // לוג לבדיקת הטוקן
-    
+
     if (!token) {
       throw new Error("No token provided");
     }
@@ -32,65 +32,82 @@ const authenticateJWT = (req, res, next) => {
   }
 };
 
- 
-  // הוספת תרומה למשתמש
-  router.post("/addonations", authenticateJWT, async (req, res) => {
+
+// הוספת תרומה למשתמש
+const mongoose = require("mongoose"); // Import mongoose to use Decimal128
+
+router.post("/addonations", authenticateJWT, async (req, res) => {
+  try {
     const { userId, amount, status } = req.body;
-  
-    try {
-      if (amount <= 0) {
-        return res.status(400).json({ message: "Amount must be positive" });
-      }
-  
-      // חפש את המשתמש לפי ה-ID שנשלח מהבקשה
-      const user = await UserModel.findById(userId);
-  
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      // הוסף את התרומה למשתמש
-      user.donations.push({
-        amount,
-        status,
-        date: new Date(),
-      });
-  
-      // עדכן את סך התרומות
-      user.totalDonated += amount;
-      if (status === "טרם שולם") {
-        user.totalOwed += amount;
-      }
-  
-      await user.save();
-      res.status(201).json({ message: "Donation added successfully", user });
-    } catch (error) {
-      console.error("Error adding donation:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+
+    // Validate the amount
+    if (isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ message: "Invalid amount" });
     }
-  });
-  
-  
-  router.get("/getdonations", authenticateJWT, async (req, res) => {
-    try {
-      const userId = req.user.userId; // זה מתבצע דרך פונקציית authenticateJWT
-      console.log(userId);
-      const user = await UserModel.findById(userId).select("donations totalDonated totalOwed");
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      res.json({
-        donations: user.donations,
-        totalDonated: user.totalDonated,
-        totalOwed: user.totalOwed,
-      });
-    } catch (error) {
-      console.error("Error fetching donations:", error); // הדפס את השגיאה
-      res.status(500).json({ message: "Internal Server Error" });
+
+    // Find the user by ID
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  });
+
+    // Parse amount once for consistency and convert to Decimal128
+    const parsedAmount = mongoose.Types.Decimal128.fromString(amount.toString());
+
+    // Add the donation to the user's donations array
+    user.donations.push({
+      amount: parsedAmount,
+      status,
+      date: new Date(),
+    });
+
+    // Update totalDonated by summing the current total with the new amount
+    console.log("Previous totalDonated:", user.totalDonated);
+    user.totalDonated = (Number(user.totalDonated) || 0) + parseFloat(parsedAmount.toString());
+    console.log("Updated totalDonated:", user.totalDonated);
+
+    // If status is "טרם שולם", update totalOwed by summing with the new amount
+    if (status === "טרם שולם") {
+      user.totalOwed = (Number(user.totalOwed) || 0) + parseFloat(parsedAmount.toString());
+    }
+
+    // Save the user with the updated data
+    await user.save();
+
+    // Respond with a success message and updated user data
+    res.status(201).json({ message: "Donation added successfully", user });
+  } catch (error) {
+    console.error("Error adding donation:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+
+
+
+router.get("/getdonations", authenticateJWT, async (req, res) => {
+  try {
+    const userId = req.user.userId; // זה מתבצע דרך פונקציית authenticateJWT
+    console.log(userId);
+    const user = await UserModel.findById(userId).select("donations totalDonated totalOwed monthlyDonations");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      donations: user.donations,
+      totalDonated: user.totalDonated,
+      totalOwed: user.totalOwed,
+      monthlyDonations: user.monthlyDonations,
+    });
+  } catch (error) {
+    console.error("Error fetching donations:", error); // הדפס את השגיאה
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 
 
