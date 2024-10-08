@@ -24,20 +24,22 @@ router.post("/register", async (req, res) => {
 
     // האש את הסיסמה
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     // צור משתמש חדש
     const newUser = new UserModel({
       username,
       email,
-      phoneNumber: phoneNumber || "", 
-      password: hashedPassword });
+      phoneNumber: phoneNumber || "",
+      password: hashedPassword
+    });
 
     await newUser.save();
-    
+
     res.status(201).send("User registered successfully");
   } catch (error) {
-    console.error("Error during registration:", error); 
-    res.status(500).send("Server error");  }
+    console.error("Error during registration:", error);
+    res.status(500).send("Server error");
+  }
 });
 
 router.post("/login", async (req, res) => {
@@ -64,10 +66,13 @@ router.post("/login", async (req, res) => {
 
     // שלח את הטוקן כעוגיה מאובטחת
     res.cookie("token", token, {
-      httpOnly: true,  // מונע גישה לעוגיה דרך JavaScript
+      httpOnly: true,
+      // מונע גישה לעוגיה דרך JavaScript
+      secure: true, // חובה אם אתה משתמש ב-HTTPS
+      sameSite: 'None', // נדרש כדי לשלוח קוקיז בבקשות Cross-Site
     });
     // שלח הודעת הצלחה
-    res.status(200).json({ username: user.username, role: user.role, message: 'Logged in successfully' }); 
+    res.status(200).json({ username: user.username, role: user.role, message: 'Logged in successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).send("Server error");
@@ -76,20 +81,20 @@ router.post("/login", async (req, res) => {
 
 
 
-  
-  // קבלת משתמש לפי ID
-  router.get("/:id", async (req, res) => {
-    try {
-      const user = await UserModel.findById(req.params.id);
-      if (!user) {
-        return res.status(404).send("User not found");
-      }
-      res.json(user);
-    } catch (error) {
-      res.status(500).send("Server error");
+
+// קבלת משתמש לפי ID
+router.get("/:id", async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.params.id);
+    if (!user) {
+      return res.status(404).send("User not found");
     }
-  });
-  
+    res.json(user);
+  } catch (error) {
+    res.status(500).send("Server error");
+  }
+});
+
 
 
 // פונקציה להגן על מסלול
