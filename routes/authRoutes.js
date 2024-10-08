@@ -58,14 +58,11 @@ router.post("/login", async (req, res) => {
     }
 
     // צור JWT עם פרטי המשתמש
-    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: "30d", // הטוקן יפוג תוך 30 ימים
-    });
-
-    // שלח את הטוקן כעוגיה מאובטחת
     res.cookie("token", token, {
       httpOnly: true,  // מונע גישה לעוגיה דרך JavaScript
-   
+      secure: process.env.NODE_ENV === "production", // שולח את העוגיה רק על חיבור מאובטח אם זה בייצור
+      sameSite: "None", // הכרחי במקרים של Cross-Site
+      maxAge: 30 * 24 * 60 * 60 * 1000, // תוקף של 30 ימים במילישניות
     });
     // שלח הודעת הצלחה
     res.status(200).json({ username: user.username, role: user.role, message: 'Logged in successfully' }); 
