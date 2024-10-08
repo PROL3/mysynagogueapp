@@ -1,0 +1,48 @@
+#####
+post http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+    "username": "meir",
+    "email": "meir2@gmail.com" ,
+    "password": "momobubush2345"
+}
+
+#####
+post https://better-bats-double.loca.lt//api/auth/login
+Content-Type: application/json
+
+{ 
+    "email": "liem11@gmail.com" ,
+    "password": "liavliem1221"
+}
+
+### Create User
+POST https://sour-beans-vanish.loca.lt/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "liem",
+  "email": "liem11@gmail.com",
+  "phoneNumber": "0541234567",
+  "password": "liavliem1221",
+  "role": "user",
+  "donations": [
+    {
+      "amount": 100,
+      "date": "2024-10-01T00:00:00Z",
+      "status": "שולם"
+    },
+    {
+      "amount": 50,
+      "date": "2024-10-02T00:00:00Z",
+      "status": "טרם שולם"
+    }
+  ],
+  "totalDonated": 150,
+  "totalOwed": 50
+}
+
+### Get User by ID
+GET http://localhost:8080/api/donation/donations
+Authorization: Bearer bX1gKOv3b6oB3EtYBlWwxox0fK1EgBiFHkj9ElAMBeA
