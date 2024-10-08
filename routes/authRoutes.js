@@ -83,18 +83,21 @@ router.post("/login", async (req, res) => {
 
 
 // קבלת משתמש לפי ID
-router.get("/:id", async (req, res) => {
+router.get("/getusers", async (req, res) => {
   try {
-    const user = await UserModel.findById(req.params.id);
-    if (!user) {
-      return res.status(404).send("User not found");
+    // השג את כל המשתמשים מהמסד נתונים
+    const users = await UserModel.find(); // משיכת כל המשתמשים
+    
+    if (!users || users.length === 0) {
+      return res.status(404).send("No users found");
     }
-    res.json(user);
+    
+    res.json(users); // החזרת כל המשתמשים כ-JSON
   } catch (error) {
+    console.error("Error fetching users:", error); // לוג שגיאה אם ישנה
     res.status(500).send("Server error");
   }
 });
-
 
 
 // פונקציה להגן על מסלול
