@@ -35,35 +35,38 @@ const authenticateJWT = (req, res, next) => {
  
   // הוספת תרומה למשתמש
   router.post("/addonations", authenticateJWT, async (req, res) => {
-    const { amount, status } = req.body;
+    const { userId, amount, status } = req.body;
   
     try {
-      // חפש את המשתמש לפי ה-ID מהטוקן
-      const userId = req.user.userId; // זה מתבצע דרך פונקציית authenticateJWT
+      if (amount <= 0) {
+        return res.status(400).json({ message: "Amount must be positive" });
+      }
+  
+      // חפש את המשתמש לפי ה-ID שנשלח מהבקשה
       const user = await UserModel.findById(userId);
   
       if (!user) {
-        return res.status(404).send("User not found");
+        return res.status(404).json({ message: "User not found" });
       }
   
-      // הוסף את התרומה למערך התרומות של המשתמש
+      // הוסף את התרומה למשתמש
       user.donations.push({
         amount,
         status,
-        date: new Date() // תאריך התרומה
+        date: new Date(),
       });
   
-      // עדכן את סך התרומות של המשתמש
+      // עדכן את סך התרומות
       user.totalDonated += amount;
       if (status === "טרם שולם") {
         user.totalOwed += amount;
       }
   
-      await user.save(); // שמור את השינויים במסד הנתונים
+      await user.save();
       res.status(201).json({ message: "Donation added successfully", user });
     } catch (error) {
-      console.error(error);
-      res.status(500).send("Server error");
+      console.error("Error adding donation:", error);
+      res.status(500).json({ message: "Internal Server Error" });
     }
   });
   
@@ -88,6 +91,14 @@ const authenticateJWT = (req, res, next) => {
       res.status(500).json({ message: "Internal Server Error" });
     }
   });
+
+
+
+
+
+
+
+
 
 
 module.exports = router;
