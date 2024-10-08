@@ -5,20 +5,31 @@ const { console } = require("inspector");
 const router = express.Router();
 
 const authenticateJWT = (req, res, next) => {
-  const token = req.cookies.token;
-  if (!token) return res.sendStatus(401);
-  if (token) {
+  try {
+    const token = req.cookies.token;
+    if (!token) {
+      throw new Error("No token provided"); // נזרוק שגיאה אם אין טוקן
+    }
+
+    // אימות הטוקן
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
       if (err) {
-        return res.sendStatus(403); // Forbidden
+        throw new Error("Invalid token"); // נזרוק שגיאה אם יש שגיאה באימות
       }
       req.user = user;
-      next();
+      next(); // ממשיך לבקשה הבאה אם האימות מצליח
     });
-  } else {
-    res.sendStatus(401); // Unauthorized
+  } catch (error) {
+    if (error.message === "No token provided") {
+      return res.status(401).json({ message: "Unauthorized: No token" });
+    } else if (error.message === "Invalid token") {
+      return res.status(403).json({ message: "Forbidden: Invalid token" });
+    } else {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
   }
 };
+
  
   // הוספת תרומה למשתמש
   router.post("/addonations", authenticateJWT, async (req, res) => {
