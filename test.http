@@ -1,0 +1,78 @@
+#####
+post  https://mysynagogueapp.onrender.com/api/auth/register
+Content-Type: application/json
+
+{
+  {
+  "username": "botbot",
+  "email": "original1@gmail.com",
+  "phoneNumber": "0581234567",
+  "password": "original1122",
+  "role": "user",
+  "donations": [
+    {
+      "amount": 100,
+      "date": "2024-10-01T10:00:00Z",
+      "status": "שולם"
+    },
+    {
+      "amount": 50,
+      "date": "2024-09-15T10:00:00Z",
+      "status": "טרם שולם"
+    }
+  ],
+  "totalDonated": 150,
+  "totalOwed": 60,
+  "monthlyDonations": {
+     "ינואר": 100,
+     "פבואר": 100,
+     "מרץ": 100,
+     "אפריל": 100,
+     "מאי": 100,
+     "יוני": 100,
+     "יולי": 100,
+     "אוגוסט": 100,
+     "ספטמבר": 100,
+     "אוקטובר": 0,
+     "נובמבר": 0,
+     "דצמבר": 0
+    }
+  }
+
+}
+
+#####
+post https://mysynagogueapp.onrender.com/api/auth/login
+Content-Type: application/json
+
+{ 
+  "email": "original2@gmail.com",
+  "password": "liavliem1221"
+}
+
+### Create User
+POST https://sour-beans-vanish.loca.lt/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "liav",
+  "email": "liavramadi17@gmail.com",
+  "phoneNumber": "0526405022",
+  "password": "momobubush2345",
+  "role": "user",
+  "donations": [
+    {
+      "amount": 100,
+      "date": "2024-10-01T00:00:00Z",
+      "status": "שולם"
+    },
+  ],
+  "totalDonated": 150,
+  "totalOwed": 50
+}
+
+### Get User by ID
+GET http://localhost:10000/api/donation/donations
+Authorization: Bearer bX1gKOv3b6oB3EtYBlWwxox0fK1EgBiFHkj9ElAMBeA
+####
+get https://mysynagogueapp.onrender.com/api/donation/getdonations
