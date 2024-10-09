@@ -22,11 +22,16 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // מאפשר שליחת עוגיות
   }));
-  app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*'); // מאפשר לכל מקור
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  const allowedOrigins = ['http://localhost:5173', 'https://your-frontend-domain.com'];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
 
