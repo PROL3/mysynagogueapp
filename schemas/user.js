@@ -17,18 +17,18 @@ const UserSchema = new mongoose.Schema({
   totalDonated: { type: mongoose.Schema.Types.Decimal128, default: 0.0 }, // Change to Decimal128
   totalOwed: { type: mongoose.Schema.Types.Decimal128, default: 0.0 }, // Change to Decimal128
   monthlyDonations: { // שדה חדש עבור תרומות לפי חודשים
-    ינואר: { type: Number, default: 0 },
-    פבואר: { type: Number, default: 0 },
-    מרץ: { type: Number, default: 0 },
-    אפריל: { type: Number, default: 0 },
-    מאי: { type: Number, default: 0 },
-    יוני: { type: Number, default: 0 },
-    יולי: { type: Number, default: 0 },
-    אוגוסט: { type: Number, default: 0 },
-    ספטמבר: { type: Number, default: 0 },
-    אוקטובר: { type: Number, default: 0 },
-    נובמבר: { type: Number, default: 0 },
-    דצמבר: { type: Number, default: 0 },
+    ינואר: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    פבואר: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    מרץ: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    אפריל: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    מאי: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    יוני: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    יולי: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    אוגוסט: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    ספטמבר: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    אוקטובר: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    נובמבר: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
+    דצמבר: {  type: mongoose.Schema.Types.Decimal128, default: 0.0 },
   }
 }, { timestamps: true });
 
