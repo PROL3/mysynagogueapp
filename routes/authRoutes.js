@@ -83,7 +83,7 @@ router.post("/login", async (req, res) => {
       // מונע גישה לעוגיה דרך JavaScript
       secure: true, // חובה אם אתה משתמש ב-HTTPS
       sameSite: 'None', // נדרש כדי לשלוח קוקיז בבקשות Cross-Site
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ימים במילישניות
+     // maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ימים במילישניות
 
     });
     // שלח הודעת הצלחה
