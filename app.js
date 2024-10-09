@@ -17,19 +17,30 @@ const app = express();
 connectDB();
 
 // Middleware
+const allowedOrigins = ['http://localhost:5173', 'https://localhost', 'capacitor://localhost'];
+
 app.use(cors({
-    origin: "http://localhost:5173", // ודא שזה הכתובת של הפרונטנד שלך
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // מאפשר שליחת עוגיות
-  }));
-  app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://localhost'); // עדכן את המקור המתאים
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    next();
-  });
-  
+    credentials: true,
+}));
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
   
 
 
