@@ -22,7 +22,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // מאפשר שליחת עוגיות
   }));
-  const allowedOrigins = ['http://localhost:5173', 'https://your-frontend-domain.com'];
+  const allowedOrigins = ['http://localhost:5173', 'https://localhost'];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
