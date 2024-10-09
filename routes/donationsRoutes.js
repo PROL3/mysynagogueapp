@@ -45,6 +45,7 @@ router.post("/addonations", authenticateJWT, async (req, res) => {
 
     // Find the user by ID
     const user = await UserModel.findById(userId);
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -78,6 +79,11 @@ router.post("/addonations", authenticateJWT, async (req, res) => {
     res.status(201).json({ message: "Donation added successfully", user });
   } catch (error) {
     console.error("Error adding donation:", error);
+    const token = req.cookies['token'];
+    if (!token) {
+      return res.status(401).json({ message: 'Unauthorized: No token' });
+    }
+
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
