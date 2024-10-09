@@ -37,7 +37,7 @@ const authenticateJWT = (req, res, next) => {
 
 router.post("/addonations", authenticateJWT, async (req, res) => {
   try {
-    const { userId, amount, status } = req.body;
+    const { userId, amount, status, month } = req.body; // Include month in the request body
 
     // Validate the amount
     if (isNaN(amount) || amount <= 0) {
@@ -46,12 +46,11 @@ router.post("/addonations", authenticateJWT, async (req, res) => {
 
     // Find the user by ID
     const user = await UserModel.findById(userId);
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Parse amount once for consistency and convert to Decimal128
+    // Parse amount to Decimal128
     const parsedAmount = mongoose.Types.Decimal128.fromString(amount.toString());
 
     // Add the donation to the user's donations array
@@ -59,17 +58,19 @@ router.post("/addonations", authenticateJWT, async (req, res) => {
       amount: parsedAmount,
       status,
       date: new Date(),
+      month, // Store the month with the donation
     });
 
-    // Update totalDonated by summing the current total with the new amount
-    console.log("Previous totalDonated:", user.totalDonated);
+    // Update totalDonated
     user.totalDonated = (Number(user.totalDonated) || 0) + parseFloat(parsedAmount.toString());
-    console.log("Updated totalDonated:", user.totalDonated);
 
-    // If status is "טרם שולם", update totalOwed by summing with the new amount
+    // Update totalOwed if status is "טרם שולם"
     if (status === "טרם שולם") {
       user.totalOwed = (Number(user.totalOwed) || 0) + parseFloat(parsedAmount.toString());
     }
+
+    // Update the monthlyDonations for the specified month
+    user.monthlyDonations[month] = (user.monthlyDonations[month] || 0) + parseFloat(parsedAmount.toString());
 
     // Save the user with the updated data
     await user.save();
@@ -81,6 +82,8 @@ router.post("/addonations", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+
 
 
 
