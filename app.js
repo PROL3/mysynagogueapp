@@ -17,30 +17,27 @@ const app = express();
 connectDB();
 
 // Middleware
-const allowedOrigins = ['http://localhost:5173', 'https://mysynagogueapp.onrender.com','capacitor://localhost'];
+const allowedOrigins = [
+  'http://localhost:5173', 
+  'https://mysynagogueapp.onrender.com',
+  'http://localhost:10000', // תיקון כתובת עם הפורט הנכון
+  'capacitor://localhost'
+];
 
 app.use(cors({
     origin: function (origin, callback) {
+        // Handle requests without origin (e.g., Postman or server-side requests)
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
+            console.error('Blocked by CORS:', origin); // Add log for blocked origin
             callback(new Error('Not allowed by CORS'));
         }
     },
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
+    credentials: true, // Allow sending cookies and credentials
 }));
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
 
 
 
