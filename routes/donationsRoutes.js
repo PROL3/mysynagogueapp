@@ -63,7 +63,7 @@ router.post("/addonations", authenticateJWT, async (req, res) => {
     // Add the donation to the user's donations array
     if(status === 'שולם') {
       user.donations.push({
-        amount: parsedAmount,
+        amount:parseFloat(amount),
         status,
         date: new Date(),
       });
