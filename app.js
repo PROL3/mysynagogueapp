@@ -19,7 +19,8 @@ const allowedOrigins = [
   'http://localhost:5173', 
   'https://mysynagogueapp.onrender.com',
   'http://localhost:10000', // תיקון כתובת עם הפורט הנכון
-  'capacitor://localhost'
+  'capacitor://localhost',
+  'https://localhost'
 ];
 
 app.use(cors({
