@@ -97,7 +97,7 @@ router.post("/login", async (req, res) => {
 
     });
     // שלח הודעת הצלחה
-    res.status(200).json({ username: user.username, role: user.role, message: 'Logged in successfully' });
+    res.status(200).json({ userId:user._id ,username: user.username, role: user.role, message: 'Logged in successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).send("Server error");
