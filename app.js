@@ -13,9 +13,6 @@ dotenv.config(); // טוען את המשתנים מקובץ ה-.env
 
 const app = express();
 app.use(express.json()); // מנתח בקשות JSON
-app.use(cookieParser());
-// התחברות ל-MongoDB
-connectDB();
 
 // Middleware
 const allowedOrigins = [
@@ -38,6 +35,12 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Allow sending cookies and credentials
 }));
+
+app.use(cookieParser());
+// התחברות ל-MongoDB
+connectDB();
+
+
 
 
 

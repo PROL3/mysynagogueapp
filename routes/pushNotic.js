@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const UserModel = require("../schemas/user");
 const admin = require("firebase-admin");
-
 const authenticateJWT = (req, res, next) => {
     try {
         const token = req.cookies.token;
@@ -70,39 +69,44 @@ router.post('/sendtoallusers', authenticateJWT, async (req, res) => {
         }
 
         // קבלת כל המשתמשים
-        const users = await UserModel.find();
 
         // קבלת כל הטוקנים
-        const tokens = users.map(user => user.deviceToken).filter(Boolean); // Get valid tokens
+    // Fetch only the device tokens from the users collection
+    const users = await UserModel.find({}, { deviceToken: 1, _id: 0 });
+    
+    // Extract device tokens into an array
+    const tokens = users.map(user => user.deviceToken).filter(token => token !== null);
 
-        const payload = {
+    
+        // Create messages for each token
+        const messages = tokens.map(token => ({
+            token: token,
             notification: {
-                title: "הודעה חדשה מהבית כנסת שלי",
-                body: message,
+                title: "New Message",
+                body: message || "You have a new message", // Use the message from the request or default
             },
-        };
+        }));
 
-        // שליחת הודעות לכל משתמש
-        if (tokens.length > 0) {
-            const messages = tokens.map(token => ({
-                token: token,
-                notification: payload.notification,
-                // You can add data here if needed
-            }));
-
-            // Send messages using sendEachForMulticast
-            const response = await admin.messaging().sendEachForMulticast(messages);
-
-            console.log("Successfully sent message:", response);
-            return res.status(200).json({ message: 'ההודעות נשלחו בהצלחה', response });
+        // Send notifications to all users with device tokens
+        if (messages.length > 0) {
+            await sendPushNotification(messages);
+            return res.status(200).json({ message: "Push notifications sent successfully" });
         } else {
-            return res.status(404).json({ message: 'לא נמצאו טוקנים לשליחה' });
+            console.log("No device tokens found");
+            return res.status(404).json({ message: "No device tokens found" });
         }
-    } catch (error) {
-        console.error("Error sending message to all users:", error);
-        return res.status(500).send('Internal server error');
-    }
+        } catch (error) {
+          console.error("Error sending notifications:", error);
+        }
 });
-
+const sendPushNotification = async (messages) => {
+    try {
+      const response = await admin.messaging().sendEachForMulticast(messages);
+      console.log("Push notifications sent successfully:", response);
+    } catch (error) {
+      console.error("Error sending push notifications:", error);
+    }
+  };
+  
 
 module.exports = router;
