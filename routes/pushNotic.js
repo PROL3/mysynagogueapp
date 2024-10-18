@@ -68,7 +68,6 @@ router.post('/sendtoallusers', authenticateJWT, async (req, res) => {
             return res.status(403).json({ message: 'אין לך הרשאות לשלוח הודעות' });
         }
 
-        // קבלת כל המשתמשים
 
         // קבלת כל הטוקנים
     // Fetch only the device tokens from the users collection
@@ -101,7 +100,7 @@ router.post('/sendtoallusers', authenticateJWT, async (req, res) => {
 });
 const sendPushNotification = async (messages) => {
     try {
-      const response = await admin.messaging().sendEach(messages);
+      const response = await getMessaging().sendMulticast(messages);
       console.log("Push notifications sent successfully:", response);
     } catch (error) {
       console.error("Error sending push notifications:", error);

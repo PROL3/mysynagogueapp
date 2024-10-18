@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema({
     { 
       amount: { type: Number }, 
       date: { type: Date, default: Date.now }, 
-      status: { type: String, enum: ["שולם", "טרם שולם"], default: "טרם שולם" } 
+      status: { type: String, enum: ["שולם", "לא שולם"], default: "לא שולם" } 
     }
   ],
   totalDonated: { type: mongoose.Schema.Types.Decimal128, default: 0.0 }, // Change to Decimal128

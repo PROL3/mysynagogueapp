@@ -83,7 +83,7 @@ router.post("/addonations", authenticateJWT, async (req, res) => {
         user.totalDonated = addDecimal128(user.totalDonated, parsedAmount);
       }
     
-    // Update totalOwed if status is "טרם שולם"
+    // Update totalOwed if status is "לא שולם"
     if (status === "לא שולם") {
       if (!user.totalOwed) {
         user.totalOwed = parsedAmount;
