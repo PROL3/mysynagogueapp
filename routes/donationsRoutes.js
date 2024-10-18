@@ -41,7 +41,8 @@ router.post("/addonations", authenticateJWT, async (req, res) => {
     console.log('Received data:', { userId, amount, status, month });
     
     // Validate the amount
-    if (isNaN(amount) || amount < 0) {
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount < 0) {
       return res.status(400).json({ message: "Invalid amount" });
     }
 
@@ -58,53 +59,48 @@ router.post("/addonations", authenticateJWT, async (req, res) => {
     }
 
     // Parse amount to Decimal128
-    const parsedAmount = mongoose.Types.Decimal128.fromString(amount.toString());
+    const decimalAmount = mongoose.Types.Decimal128.fromString(parsedAmount.toString());
+
+    // Ensure donations array exists
+    if (!Array.isArray(user.donations)) {
+      user.donations = [];
+    }
 
     // Add the donation to the user's donations array
-    if(status === 'שולם') {
+    if (status === 'שולם') {
       user.donations.push({
-        amount:parseFloat(amount),
+        amount: decimalAmount, // השתמש ב-Decimal128
         status,
         date: new Date(),
       });
     }
 
-    // Helper function to add Decimal128 values
-    const addDecimal128 = (a, b) => {
-      const aNumber = parseFloat(a.toString());
-      const bNumber = parseFloat(b.toString());
-      return mongoose.Types.Decimal128.fromString((aNumber + bNumber).toString());
-    };
-
     // Update totalDonated
     if (!user.totalDonated) {
-      user.totalDonated = parsedAmount;
+      user.totalDonated = decimalAmount;
     } else if (status === "שולם") {
-        user.totalDonated = addDecimal128(user.totalDonated, parsedAmount);
-      }
+      user.totalDonated = addDecimal128(user.totalDonated, decimalAmount);
+    }
     
     // Update totalOwed if status is "לא שולם"
     if (status === "לא שולם") {
       if (!user.totalOwed) {
-        user.totalOwed = parsedAmount;
+        user.totalOwed = decimalAmount;
       } else {
-        user.totalOwed = addDecimal128(user.totalOwed, parsedAmount);
+        user.totalOwed = addDecimal128(user.totalOwed, decimalAmount);
       }
     }
 
-      // Update the monthlyDonations for the specified month
-      if (!user.monthlyDonations[month]) {
-        // Initialize the month if it doesn't exist
-        user.monthlyDonations[month] = {
-          amount: parsedAmount,
-          status: status === "שולם" ? "שולם" : "לא שולם",
-        };
-      } else {
-        // Update the amount for the month
-        user.monthlyDonations[month].amount = addDecimal128(user.monthlyDonations[month].amount, parsedAmount);
-
-        user.monthlyDonations[month].status = status;
-      }
+    // Update the monthlyDonations for the specified month
+    if (!user.monthlyDonations[month]) {
+      user.monthlyDonations[month] = {
+        amount: decimalAmount,
+        status: status === "שולם" ? "שולם" : "לא שולם",
+      };
+    } else {
+      user.monthlyDonations[month].amount = addDecimal128(user.monthlyDonations[month].amount, decimalAmount);
+      user.monthlyDonations[month].status = status;
+    }
 
     // Save the user with the updated data
     await user.save();
