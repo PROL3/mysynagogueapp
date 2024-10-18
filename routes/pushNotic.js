@@ -82,7 +82,7 @@ router.post('/sendtoallusers', authenticateJWT, async (req, res) => {
         const messages = tokens.map(token => ({
             token: token,
             notification: {
-                title: "New Message",
+                title: "MySynagogue",
                 body: message || "You have a new message", // Use the message from the request or default
             },
         }));
@@ -105,6 +105,8 @@ const sendPushNotification = async (messages) => {
       console.log("Push notifications sent successfully:", response);
     } catch (error) {
       console.error("Error sending push notifications:", error);
+      return res.status(500).json({ message: "Internal server error", error: error.message });
+
     }
   };
   
