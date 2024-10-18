@@ -101,7 +101,7 @@ router.post('/sendtoallusers', authenticateJWT, async (req, res) => {
 });
 const sendPushNotification = async (messages) => {
     try {
-      const response = await admin.messaging().sendEachForMulticast(messages);
+      const response = await admin.messaging().sendEach(messages);
       console.log("Push notifications sent successfully:", response);
     } catch (error) {
       console.error("Error sending push notifications:", error);
