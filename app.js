@@ -21,7 +21,7 @@ connectDB();
 const allowedOrigins = [
   'http://localhost:5173', 
   'https://mysynagogueapp.onrender.com',
-  'http://localhost:8080', // תיקון כתובת עם הפורט הנכון
+  'http://localhost:10000', // תיקון כתובת עם הפורט הנכון
   'capacitor://localhost'
 ];
 
