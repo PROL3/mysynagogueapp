@@ -104,7 +104,48 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.post("/login/google", async (req, res) => {
+  const { tokenId } = req.body;
 
+  try {
+    // אמת את הטוקן של Google
+    const ticket = await client.verifyIdToken({
+      idToken: tokenId,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload(); // מקבל את הנתונים של המשתמש מ-Google
+    const { email, sub: googleId, name } = payload;
+
+    // בדוק אם המשתמש קיים כבר במערכת
+    let user = await UserModel.findOne({ email });
+
+    if (!user) {
+      // אם המשתמש לא קיים, צור משתמש חדש עם הפרטים של Google
+      user = new UserModel({ email, googleId, username: name });
+      await user.save();
+    }
+
+    // צור JWT עם פרטי המשתמש
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: "30d"
+    });
+
+    // שלח את הטוקן כעוגיה מאובטחת
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+    // שלח הודעת הצלחה עם פרטי המשתמש
+    res.status(200).json({ username: user.username, role: user.role, message: 'Logged in successfully with Google' });
+  } catch (error) {
+    console.error("Error with Google login:", error);
+    res.status(500).send("Google login failed");
+  }
+});
 
 
 // קבלת משתמש לפי ID
@@ -112,7 +153,8 @@ router.get("/getusers", async (req, res) => {
   try {
     const users = await UserModel.find(); // Fetch all users
     console.log(users); // Correct log to see the fetched users
-    
+   
+
     if (!users || users.length === 0) {
       return res.status(404).send("No users found");
     }

@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
@@ -16,20 +15,57 @@ const UserSchema = new mongoose.Schema({
   ],
   totalDonated: { type: mongoose.Schema.Types.Decimal128, default: 0.0 }, // Change to Decimal128
   totalOwed: { type: mongoose.Schema.Types.Decimal128, default: 0.0 }, // Change to Decimal128
-  monthlyDonations: { // שדה חדש עבור תרומות לפי חודשים
-    ינואר: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    פבואר: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    מרץ: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    אפריל: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    מאי: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    יוני: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    יולי: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    אוגוסט: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    ספטמבר: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    אוקטובר: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    נובמבר: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-    דצמבר: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
-  }
+  monthlyDonations: { 
+    ינואר: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } // "לא שולם" or "שולם"
+    },
+    פבואר: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    },
+    מרץ: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    },
+    אפריל: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    },
+    מאי: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    },
+    יוני: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    },
+    יולי: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    },
+    אוגוסט: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    },
+    ספטמבר: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    },
+    אוקטובר: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    },
+    נובמבר: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    },
+    דצמבר: { 
+      amount: { type: mongoose.Schema.Types.Decimal128, default: () => mongoose.Types.Decimal128.fromString('0.0') },
+      status: { type: String, default: "לא שולם" } 
+    }
+  },
+  deviceToken: { type: String, optional: true, unique: true } 
 }, { timestamps: true });
 
 const UserModel = mongoose.model("users", UserSchema);
