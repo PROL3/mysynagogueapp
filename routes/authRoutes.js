@@ -9,6 +9,7 @@ const router = express.Router();
 
 // רישום משתמש חדש
 router.post("/register", async (req, res) => {
+
   const { 
     username, 
     email, 
@@ -45,7 +46,7 @@ router.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // צור משתמש חדש
-    const newUser = new UserModel({
+    const newUser = await UserModel.create({
       username,
       email,
       phoneNumber,
@@ -55,10 +56,7 @@ router.post("/register", async (req, res) => {
       totalOwed,
       monthlyDonations
     });
-
-    await newUser.save();
-
-    res.status(201).send("User registered successfully");
+    res.status(201).json(newUser)
   } catch (error) {
     console.error("Error during registration:", error);
     res.status(500).send("Server error");
@@ -83,7 +81,7 @@ router.post("/login", async (req, res) => {
     }
 
     // צור JWT עם פרטי המשתמש
-    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "30d", // הטוקן יפוג תוך 30 ימים
     });
 

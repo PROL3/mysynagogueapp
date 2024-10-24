@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const UserModel = require("../schemas/user");
 const admin = require("firebase-admin");
-const jwt = require("jsonwebtoken");
-
 const authenticateJWT = (req, res, next) => {
     try {
         const token = req.cookies.token;
@@ -62,7 +60,8 @@ router.post('/register-token', async (req, res) => {
 
 // API לשליחת הודעות Push
 router.post('/sendtoallusers', authenticateJWT, async (req, res) => {
-            const { message, userRole } = req.body;
+    try {
+        const { message, userRole } = req.body;
 
         // אימות שהתפקיד של המשתמש הוא 'admin' או 'gabai'
         if (userRole !== 'admin' && userRole !== 'gabai') {
@@ -71,40 +70,44 @@ router.post('/sendtoallusers', authenticateJWT, async (req, res) => {
 
 
         // קבלת כל הטוקנים
-        // Fetch only the device tokens from the users collection
-        const users = await UserModel.find({}, { deviceToken: 1, _id: 0 });
+    // Fetch only the device tokens from the users collection
+    const users = await UserModel.find({}, { deviceToken: 1, _id: 0 });
+    
+    // Extract device tokens into an array
+    const tokens = users.map(user => user.deviceToken).filter(token => token !== null);
 
-        // Extract device tokens into an array
-        const tokens = users.map(user => user.deviceToken).filter(token => token !== null);
-        
-        const messages = {
+    
+        // Create messages for each token
+        const messages = tokens.map(token => ({
+            token: token,
             notification: {
                 title: "MySynagogue",
-                body: message, // Use the message from the request or default
+                body: message || "You have a new message", // Use the message from the request or default
             },
-            token: 'eA401tObEZ41Ux1Ybf2e-a:APA91bF4HEMxQ4dCh8vRogljvso1Zzx3OTY8zD0uF-ZVu1J8b3hZgKKEB6KxJXRntHTE-KxFE9Dnj1WDuSVAcz_O8ky2scGHW0pcvvnlU_QorGOytL9U7FIsepFsuo4ltNS1cCVWbtti'
-        };
+        }));
 
-     try {
+        // Send notifications to all users with device tokens
+        if (messages.length > 0) {
             await sendPushNotification(messages);
-            
-            res.status(200).json({ message: "הו��עות ��שלחו בהצלחה" });
-            
-     }catch (error) {
-        console.error("Error sending notifications:", error);
-    }
-
+            return res.status(200).json({ message: "Push notifications sent successfully" });
+        } else {
+            console.log("No device tokens found");
+            return res.status(404).json({ message: "No device tokens found" });
+        }
+        } catch (error) {
+          console.error("Error sending notifications:", error);
+        }
 });
 const sendPushNotification = async (messages) => {
     try {
-        const response = await admin.messaging().send(messages);
-        console.log("Push notifications sent successfully:", response);
+      const response = await getMessaging().sendMulticast(messages);
+      console.log("Push notifications sent successfully:", response);
     } catch (error) {
-        console.error("Error sending push notifications:", error);
-        return res.status(500).json({ message: "Internal server error", error: error.message });
+      console.error("Error sending push notifications:", error);
+      return res.status(500).json({ message: "Internal server error", error: error.message });
 
     }
-};
-
+  };
+  
 
 module.exports = router;

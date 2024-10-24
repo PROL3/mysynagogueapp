@@ -18,6 +18,7 @@ const authenticateJWT = (req, res, next) => {
       if (err) {
         throw new Error("Invalid token");
       }
+
       req.user = user;
       next();
     });
@@ -36,10 +37,12 @@ const authenticateJWT = (req, res, next) => {
 
 // הוספת תרומה למשתמש
 router.post("/addonations", authenticateJWT, async (req, res) => {
+  console.log("הבקשה התקבלה בשרת");
+
   try {
     const { userId, amount, status, month } = req.body;
     console.log('Received data:', { userId, amount, status, month });
-    
+
     // Validate the amount
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount < 0) {
@@ -58,60 +61,104 @@ router.post("/addonations", authenticateJWT, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Parse amount to Decimal128
-    const decimalAmount = mongoose.Types.Decimal128.fromString(parsedAmount.toString());
+    // Initialize the monthly donation if it doesn't exist
+    user.monthlyDonations[month] = user.monthlyDonations[month] || { owed: 0, amount: 0, status: "לא שולם" };
 
-    // Ensure donations array exists
-    if (!Array.isArray(user.donations)) {
-      user.donations = [];
-    }
-
-    // Add the donation to the user's donations array
-    if (status === 'שולם') {
+    // Process the donation
+    if (status === "שולם") {
       user.donations.push({
-        amount: decimalAmount, // השתמש ב-Decimal128
-        status,
+        amount: parsedAmount,
+        status: status,
         date: new Date(),
       });
-    }
+      user.totalDonated = (user.totalDonated || 0) + parsedAmount; // Update total donated with the paid amount
 
-    // Update totalDonated
-    if (!user.totalDonated) {
-      user.totalDonated = decimalAmount;
-    } else if (status === "שולם") {
-      user.totalDonated = addDecimal128(user.totalDonated, decimalAmount);
-    }
-    
-    // Update totalOwed if status is "לא שולם"
-    if (status === "לא שולם") {
-      if (!user.totalOwed) {
-        user.totalOwed = decimalAmount;
+      if (parsedAmount >= user.totalOwed) {
+        user.totalOwed = 0; // Clear total owed if donation is greater than or equal to the total owed
       } else {
-        user.totalOwed = addDecimal128(user.totalOwed, decimalAmount);
+        user.totalOwed -= parsedAmount; // Subtract the donation from the total owed
       }
-    }
 
-    // Update the monthlyDonations for the specified month
-    if (!user.monthlyDonations[month]) {
-      user.monthlyDonations[month] = {
-        amount: decimalAmount,
-        status: status === "שולם" ? "שולם" : "לא שולם",
-      };
-    } else {
-      user.monthlyDonations[month].amount = addDecimal128(user.monthlyDonations[month].amount, decimalAmount);
-      user.monthlyDonations[month].status = status;
+      let remainingAmount = parsedAmount;
+
+      // Handle the current month's debt first
+      if (parsedAmount >= user.monthlyDonations[month].owed && user.monthlyDonations[month].owed !== 0) {
+        remainingAmount -= user.monthlyDonations[month].owed;
+        user.monthlyDonations[month].amount += user.monthlyDonations[month].owed;
+        user.monthlyDonations[month].owed = 0;
+        user.monthlyDonations[month].status = "שולם";
+      } else if (remainingAmount < user.monthlyDonations[month].owed) {
+        user.monthlyDonations[month].amount += remainingAmount;
+        user.monthlyDonations[month].owed -= remainingAmount;
+        remainingAmount = 0;
+      }else{
+        user.monthlyDonations[month].amount +=parsedAmount;
+        user.monthlyDonations[month].owed = 0;
+        user.monthlyDonations[month].status = "שולם"
+      }
+      await user.save();
+
+
+      // If there's remaining amount, process the debts for the upcoming months
+      if (remainingAmount > 0) {
+        const monthsOrder = validMonths;
+        const currentMonthIndex = monthsOrder.indexOf(month); // Current month index
+
+        // Start looking for debts from the next month
+        for (let i = currentMonthIndex + 1; i < monthsOrder.length; i++) {
+          const currentMonth = monthsOrder[i];
+          
+          // Ensure there's debt for the current month
+          const monthlyDonation = user.monthlyDonations[currentMonth] || { owed: 0, amount: 0, status: "לא שולם" };
+
+          if (monthlyDonation.owed > 0) {
+            if (remainingAmount >= monthlyDonation.owed) {
+              remainingAmount -= monthlyDonation.owed;
+              //monthlyDonation.amount += monthlyDonation.owed;
+              monthlyDonation.owed = 0;
+              monthlyDonation.status = "שולם";
+            } else {
+              monthlyDonation.amount += remainingAmount;
+              monthlyDonation.owed -= remainingAmount;
+              monthlyDonation.status = "לא שולם";
+              remainingAmount = 0;
+              break; // Stop as we've allocated the remaining amount
+            }
+          }
+
+          // Stop the loop if there's no remaining amount
+          if (remainingAmount <= 0) {
+            break;
+          }
+        }
+      }
+
+    } else if (status === "לא שולם") {
+      // If the donation status is "לא שולם," update the owed amount for the specific month
+      user.totalOwed += parsedAmount;
+      user.monthlyDonations[month].owed += parsedAmount;
+      user.monthlyDonations[month].status = "לא שולם";
     }
 
     // Save the user with the updated data
     await user.save();
 
-    // Respond with a success message and updated user data
-    res.status(201).json({ message: "Donation added successfully", user });
+    // Respond with the updated user data including debt and monthly donations
+    res.status(201).json({
+        donations: user.donations,
+        totalDonated: user.totalDonated,
+        totalOwed: user.totalOwed,
+        monthlyDonations: user.monthlyDonations,
+      
+    });
   } catch (error) {
     console.error("Error adding donation:", error);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 });
+
+
+
 
 
 
